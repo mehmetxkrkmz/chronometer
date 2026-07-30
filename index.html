@@ -433,6 +433,7 @@
         .controls.idle #start-btn::after { animation-delay: 0s; }
         .controls.idle #pause-btn::after { animation-delay: 0.3s; }
         .controls.idle #reset-btn::after { animation-delay: 0.6s; }
+        .controls.idle #save-btn::after { animation-delay: 0.9s; }
 
         @keyframes shineBeam {
             0% { left: -150%; }
@@ -1133,7 +1134,6 @@
                 <button id="btn-analog">Analog</button>
                 <button id="btn-timer">Geri Sayım</button>
             </div>
-            
             <button id="btn-theme-toggle" class="btn-icon" title="Tema Seç">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
@@ -1240,7 +1240,7 @@
             <button id="start-btn" class="btn-start"><span>Başlat</span></button>
             <button id="pause-btn" class="btn-pause"><span>Duraklat</span></button>
             <button id="reset-btn" class="btn-reset"><span>Sıfırla</span></button>
-            <button id="save-btn" class="btn-save" style="display: none;"><span>Süreyi Kaydet</span></button>
+            <button id="save-btn" class="btn-save"><span>Süreyi Kaydet</span></button>
         </div>
 
     </div>
@@ -1489,7 +1489,7 @@
         // -----------------------------------------------------
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, limit, doc, deleteDoc, getDocs, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, collection, addDoc, query, where, orderBy, onSnapshot, serverTimestamp, limit, doc, deleteDoc, getDocs, setDoc, enableIndexedDbPersistence } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
           apiKey: "AIzaSyC2gaxCHUN7s3Hm1ecL8GvZBwiYViACE-o",
@@ -1503,6 +1503,15 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+        
+        // Çevrimdışı Önbellek (Offline Persistence) Aktifleştirme
+        enableIndexedDbPersistence(db).catch((err) => {
+            if (err.code == 'failed-precondition') {
+                console.warn('Çoklu sekme açık, çevrimdışı önbellek sadece tek bir sekmede çalışabilir.');
+            } else if (err.code == 'unimplemented') {
+                console.warn('Bu tarayıcı çevrimdışı önbelleği desteklemiyor.');
+            }
+        });
         const provider = new GoogleAuthProvider();
 
         let currentUser = null;
@@ -1514,7 +1523,8 @@
         let unsubscribeAutoMsg = null;
         let unsubscribeStars = null;
         let liveRadarUnsubscribe = null;
-        let radarAnimationId = null;
+        let radarIntervalId = null;
+        let liveStatusHeartbeat = null;
         let activeUsersData = {};
         
         let starDensity = 100;
@@ -1542,6 +1552,8 @@
         const sidebar = document.getElementById('sidebar');
         const closeSidebar = document.getElementById('close-sidebar');
         const recordsList = document.getElementById('records-list');
+        
+        const CURRENT_SESSION_ID = Math.random().toString(36).substring(2, 10);
 
         const btnAnalog = document.getElementById('btn-analog');
         const btnDigital = document.getElementById('btn-digital');
@@ -1616,6 +1628,13 @@
         });
 
         btnLogout.addEventListener('click', () => {
+            if (liveStatusHeartbeat) {
+                clearInterval(liveStatusHeartbeat);
+                liveStatusHeartbeat = null;
+            }
+            if (currentUser) {
+                deleteDoc(doc(db, "live_status", currentUser.uid + "_" + CURRENT_SESSION_ID)).catch(()=>{});
+            }
             signOut(auth).catch(err => console.error(err));
         });
 
@@ -1630,7 +1649,9 @@
                 btnShowRecords.style.display = 'flex';
                 
                 loadRecords(user.uid);
-                updateLiveStatus(false);
+                updateLiveStatus();
+                if (liveStatusHeartbeat) clearInterval(liveStatusHeartbeat);
+                liveStatusHeartbeat = setInterval(updateLiveStatus, 60000);
                 
                 if (user.email !== ADMIN_EMAIL) {
                     const wlQuery = query(collection(db, 'whitelist'), where('email', '==', user.email));
@@ -1648,8 +1669,15 @@
                     // Sadece Admin için Canlı Radar dinleyicisi
                     if (!liveRadarUnsubscribe) {
                         liveRadarUnsubscribe = onSnapshot(collection(db, "live_status"), (snapshot) => {
-                            snapshot.forEach(docSnap => {
-                                activeUsersData[docSnap.id] = docSnap.data();
+                            snapshot.docChanges().forEach(change => {
+                                if (change.type === "added" || change.type === "modified") {
+                                    const data = change.doc.data();
+                                    data.localReceivedTime = Date.now(); // Ağ veya cihaz saat gecikmesinden bağımsız
+                                    activeUsersData[change.doc.id] = data;
+                                }
+                                if (change.type === "removed") {
+                                    delete activeUsersData[change.doc.id];
+                                }
                             });
                         }, (err) => console.error("Radar Error: ", err));
                         startRadarLoop();
@@ -1796,9 +1824,9 @@
                     liveRadarUnsubscribe();
                     liveRadarUnsubscribe = null;
                 }
-                if (radarAnimationId) {
-                    cancelAnimationFrame(radarAnimationId);
-                    radarAnimationId = null;
+                if (radarIntervalId) {
+                    clearInterval(radarIntervalId);
+                    radarIntervalId = null;
                 }
                 if (unsubscribeConfig) {
                     unsubscribeConfig();
@@ -2059,10 +2087,35 @@
                 let html = '';
                 const now = Date.now();
                 
+                // Aynı e-postaya sahip cihazları tekilleştir
+                let uniqueUsers = {};
                 Object.values(activeUsersData).forEach(user => {
+                    // Hayalet cihazları (2 dakikadan eski) yoksay
+                    if (!user.localReceivedTime || (now - user.localReceivedTime > 120000)) return;
+                    
+                    if (!uniqueUsers[user.email]) {
+                        uniqueUsers[user.email] = user;
+                    } else {
+                        const existing = uniqueUsers[user.email];
+                        // Biri çalışıyor diğeri duraklatılmışsa, çalışan sekmeyi baz al
+                        if (user.isRunning && !existing.isRunning) {
+                            uniqueUsers[user.email] = user;
+                        } 
+                        // İkisi de çalışıyor veya ikisi de duruyorsa, en son güncelleneni baz al
+                        else if (user.isRunning === existing.isRunning) {
+                            if (user.localReceivedTime > existing.localReceivedTime) {
+                                uniqueUsers[user.email] = user;
+                            }
+                        }
+                    }
+                });
+                
+                Object.values(uniqueUsers).forEach(user => {
                     let displayTime = "00:00:00";
                     if (user.isRunning) {
-                        const elapsedSinceUpdate = now - user.clientTime;
+                        let elapsedSinceUpdate = now - user.localReceivedTime;
+                        if (elapsedSinceUpdate < 0) elapsedSinceUpdate = 0; // Negatif farkı önle
+                        
                         let totalElapsed = user.elapsedTime + elapsedSinceUpdate;
                         
                         if (user.isTimerMode) {
@@ -2100,10 +2153,10 @@
                 }
                 
                 radarList.innerHTML = html;
-                radarAnimationId = requestAnimationFrame(loop);
             }
-            if(radarAnimationId) cancelAnimationFrame(radarAnimationId);
-            radarAnimationId = requestAnimationFrame(loop);
+            if (radarIntervalId) clearInterval(radarIntervalId);
+            loop(); // Çalıştır
+            radarIntervalId = setInterval(loop, 1000); // Saniyede 1 kez güncelle
         }
 
         const hoursEl = document.getElementById('hours');
@@ -2225,34 +2278,41 @@
             }
         }
 
+
+
+        let liveStatusTimeout = null;
         async function updateLiveStatus() {
             if (!currentUser) return;
             
-            let running = isTimerMode ? isTmRunning : isSwRunning;
-            let elapsed = isTimerMode ? tmElapsedTime : swElapsedTime;
-            let dur = isTimerMode ? timerDuration : 0;
+            if (liveStatusTimeout) clearTimeout(liveStatusTimeout);
             
-            try {
-                await setDoc(doc(db, "live_status", currentUser.uid), {
-                    email: currentUser.email,
-                    isRunning: running,
-                    isTimerMode: isTimerMode,
-                    startTime: running ? serverTimestamp() : null,
-                    elapsedTime: elapsed,
-                    timerDuration: dur,
-                    lastUpdated: serverTimestamp(),
-                    clientTime: Date.now()
-                });
-            } catch(e) {
-                console.error("Live status update failed:", e);
-                if (e.code === 'permission-denied') {
-                    console.warn("Radar güncelleme reddedildi.");
-                    if (!window.hasShownRadarError) {
-                        alert("Canlı Radar Hatası:\nVeritabanı kuralları normal kullanıcıların durumlarını kaydetmesine izin vermiyor. Lütfen Firestore 'Rules' sekmesinde verdiğim kodu tam olarak yapıştırıp YAYINLA (Publish) butonuna bastığınıza emin olun.");
-                        window.hasShownRadarError = true;
+            liveStatusTimeout = setTimeout(async () => {
+                let running = isTimerMode ? isTmRunning : isSwRunning;
+                let elapsed = isTimerMode ? tmElapsedTime : swElapsedTime;
+                let dur = isTimerMode ? timerDuration : 0;
+                
+                try {
+                    await setDoc(doc(db, "live_status", currentUser.uid + "_" + CURRENT_SESSION_ID), {
+                        email: currentUser.email,
+                        isRunning: running,
+                        isTimerMode: isTimerMode,
+                        startTime: running ? serverTimestamp() : null,
+                        elapsedTime: elapsed,
+                        timerDuration: dur,
+                        lastUpdated: serverTimestamp(),
+                        clientTime: Date.now()
+                    });
+                } catch(e) {
+                    console.error("Live status update failed:", e);
+                    if (e.code === 'permission-denied') {
+                        console.warn("Radar güncelleme reddedildi.");
+                        if (!window.hasShownRadarError) {
+                            alert("Canlı Radar Hatası:\nVeritabanı kuralları normal kullanıcıların durumlarını kaydetmesine izin vermiyor. Lütfen Firestore 'Rules' sekmesinde verdiğim kodu tam olarak yapıştırıp YAYINLA (Publish) butonuna bastığınıza emin olun.");
+                            window.hasShownRadarError = true;
+                        }
                     }
                 }
-            }
+            }, 800); // 800ms debounce
         }
         
         function updateIdleState() {
@@ -2350,6 +2410,12 @@
         // Init
         updateDisplay(0);
         updateIdleState();
+        
+        window.addEventListener('beforeunload', () => {
+            if (currentUser) {
+                deleteDoc(doc(db, "live_status", currentUser.uid + "_" + CURRENT_SESSION_ID)).catch(()=>{});
+            }
+        });
 
         // -----------------------------------------------------
         // 7. PREVENT ACCIDENTAL CLOSE
