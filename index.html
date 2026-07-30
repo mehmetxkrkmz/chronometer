@@ -1908,8 +1908,8 @@
             
             const timeString = `${h}:${m}:${s}.${ms}`;
             const totalRawTime = isTimerMode ? 
-                (tmElapsedTime + (isTmRunning ? performance.now() - tmStartTime : 0)) : 
-                (swElapsedTime + (isSwRunning ? performance.now() - swStartTime : 0));
+                (tmElapsedTime + (isTmRunning ? Date.now() - tmStartTime : 0)) : 
+                (swElapsedTime + (isSwRunning ? Date.now() - swStartTime : 0));
             
             const originalText = btnSave.innerHTML;
             btnSave.innerHTML = '<span>Kaydediliyor...</span>';
@@ -2062,6 +2062,60 @@
         // -----------------------------------------------------
         // 6. STOPWATCH CORE LOGIC
         // -----------------------------------------------------
+                function saveLocalState() {
+            const state = {
+                isSwRunning, swStartTime, swElapsedTime,
+                isTimerMode, isTmRunning, tmStartTime, tmElapsedTime, timerDuration, isTimerFinished,
+                timerInputs: { h: timerHoursEl.value, m: timerMinutesEl.value, s: timerSecondsEl.value }
+            };
+            localStorage.setItem('premiumStopwatchState', JSON.stringify(state));
+        }
+
+        function loadLocalState() {
+            try {
+                const saved = localStorage.getItem('premiumStopwatchState');
+                if (saved) {
+                    const state = JSON.parse(saved);
+                    isSwRunning = state.isSwRunning || false;
+                    swStartTime = state.swStartTime || 0;
+                    swElapsedTime = state.swElapsedTime || 0;
+                    
+                    isTimerMode = state.isTimerMode || false;
+                    isTmRunning = state.isTmRunning || false;
+                    tmStartTime = state.tmStartTime || 0;
+                    tmElapsedTime = state.tmElapsedTime || 0;
+                    timerDuration = state.timerDuration || 0;
+                    isTimerFinished = state.isTimerFinished || false;
+                    
+                    if (state.timerInputs) {
+                        timerHoursEl.value = state.timerInputs.h || '02';
+                        timerMinutesEl.value = state.timerInputs.m || '10';
+                        timerSecondsEl.value = state.timerInputs.s || '00';
+                    }
+
+                    if (isTimerMode) {
+                        btnTimer.click();
+                    } else {
+                        btnDigital.click(); // Default or saved
+                    }
+
+                    if (isSwRunning || isTmRunning) {
+                        if (!animationFrameId) animationFrameId = requestAnimationFrame(animationLoop);
+                    } else {
+                        if (isTimerMode) {
+                            let remaining = timerDuration - tmElapsedTime;
+                            if (remaining < 0) remaining = 0;
+                            updateTimerDisplay(remaining);
+                        } else {
+                            updateDisplay(swElapsedTime);
+                        }
+                    }
+                }
+            } catch(e) {
+                console.error("Local state load error", e);
+            }
+        }
+
         let swStartTime = 0;
         let swElapsedTime = 0;
         let isSwRunning = false;
@@ -2243,7 +2297,7 @@
         }
 
         function animationLoop() {
-            const now = performance.now();
+            const now = Date.now();
             
             if (isSwRunning) {
                 let passed = swElapsedTime + (now - swStartTime);
@@ -2338,7 +2392,7 @@
                         timerDuration = (h * 3600 + m * 60 + s) * 1000;
                         if (timerDuration <= 0) return;
                     }
-                    tmStartTime = performance.now();
+                    tmStartTime = Date.now();
                     isTmRunning = true;
                     if (!animationFrameId) animationFrameId = requestAnimationFrame(animationLoop);
                     
@@ -2347,10 +2401,11 @@
                     }
                     updateLiveStatus();
                     updateIdleState();
+                    saveLocalState();
                 }
             } else {
                 if (!isSwRunning) {
-                    swStartTime = performance.now();
+                    swStartTime = Date.now();
                     isSwRunning = true;
                     if (!animationFrameId) animationFrameId = requestAnimationFrame(animationLoop);
                     
@@ -2359,6 +2414,7 @@
                     }
                     updateLiveStatus();
                     updateIdleState();
+                    saveLocalState();
                 }
             }
         });
@@ -2366,18 +2422,20 @@
         document.getElementById('pause-btn').addEventListener('click', () => {
             if (isTimerMode) {
                 if (isTmRunning) {
-                    tmElapsedTime += performance.now() - tmStartTime;
+                    tmElapsedTime += Date.now() - tmStartTime;
                     isTmRunning = false;
                     document.getElementById('pulse-overlay').classList.remove('timer-pulse-bg');
                     updateLiveStatus();
                     updateIdleState();
+                    saveLocalState();
                 }
             } else {
                 if (isSwRunning) {
-                    swElapsedTime += performance.now() - swStartTime;
+                    swElapsedTime += Date.now() - swStartTime;
                     isSwRunning = false;
                     updateLiveStatus();
                     updateIdleState();
+                    saveLocalState();
                 }
             }
         });
@@ -2395,6 +2453,7 @@
                 updateTimerDisplay(0);
                 updateLiveStatus();
                 updateIdleState();
+                    saveLocalState();
             } else {
                 isSwRunning = false;
                 swElapsedTime = 0;
@@ -2404,12 +2463,14 @@
                 hourHand.style.transform = `rotate(0deg)`;
                 updateLiveStatus();
                 updateIdleState();
+                    saveLocalState();
             }
         });
 
         // Init
         updateDisplay(0);
         updateIdleState();
+        loadLocalState();
         
         window.addEventListener('beforeunload', () => {
             if (currentUser) {
@@ -2906,3 +2967,4 @@
     </script>
 </body>
 </html>
+
