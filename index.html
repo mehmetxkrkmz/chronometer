@@ -2141,34 +2141,62 @@
                 let html = '';
                 const now = Date.now();
                 
-                // Aynı e-postaya sahip cihazları tekilleştir
                 let uniqueUsers = {};
-                Object.values(activeUsersData).forEach(user => {
-                    // Hayalet cihazları (2 dakikadan eski) yoksay
-                    if (!user.localReceivedTime || (now - user.localReceivedTime > 120000)) return;
+                
+                // İlk adım: activeUsersData içindeki eski/hayalet verileri temizle
+                Object.keys(activeUsersData).forEach(key => {
+                    const user = activeUsersData[key];
                     
+                    let docTime = user.clientTime || 0;
+                    if (user.lastUpdated && typeof user.lastUpdated.toMillis === 'function') {
+                        docTime = user.lastUpdated.toMillis();
+                    }
+                    user.docTime = docTime; // Sonraki adımda kullanmak için kaydet
+                    
+                    // 2 saatten (7200000 ms) eski verileri veritabanından kalıcı sil
+                    const isVeryOld = (docTime > 0) && (Math.abs(now - docTime) > 7200000);
+                    
+                    if (isVeryOld) {
+                        deleteDoc(doc(db, "live_status", key)).catch(()=>{});
+                        delete activeUsersData[key];
+                        return; // Bu kullanıcıyı atla
+                    }
+                    
+                    // İkinci Adım: Aynı e-postaya sahip cihazları tekilleştir
                     if (!uniqueUsers[user.email]) {
                         uniqueUsers[user.email] = user;
                     } else {
                         const existing = uniqueUsers[user.email];
-                        // Biri çalışıyor diğeri duraklatılmışsa, çalışan sekmeyi baz al
-                        if (user.isRunning && !existing.isRunning) {
+                        // En güncel veriye sahip olanı baz al
+                        if (user.docTime > existing.docTime) {
                             uniqueUsers[user.email] = user;
-                        } 
-                        // İkisi de çalışıyor veya ikisi de duruyorsa, en son güncelleneni baz al
-                        else if (user.isRunning === existing.isRunning) {
-                            if (user.localReceivedTime > existing.localReceivedTime) {
-                                uniqueUsers[user.email] = user;
-                            }
                         }
                     }
                 });
                 
                 Object.values(uniqueUsers).forEach(user => {
                     let displayTime = "00:00:00";
-                    if (user.isRunning) {
+                    let isOffline = (now - user.docTime > 120000); // 2 dk boyunca güncelleme almadıysa çevrimdışı
+                    let stateColor = "";
+                    let stateText = "";
+                    
+                    if (isOffline) {
+                        stateColor = "#94a3b8"; // Gri
+                        const lastSeen = new Date(user.docTime);
+                        const hs = lastSeen.getHours().toString().padStart(2, '0');
+                        const ms = lastSeen.getMinutes().toString().padStart(2, '0');
+                        stateText = `Çevrimdışı 🔴 (Son Görülme: ${hs}:${ms})`;
+                    } else if (user.isRunning) {
+                        stateColor = "#4ade80"; // Yeşil
+                        stateText = "Aktif 🟢";
+                    } else {
+                        stateColor = "#facc15"; // Sarı
+                        stateText = "Duraklatıldı ⏸️";
+                    }
+
+                    if (user.isRunning && !isOffline) {
                         let elapsedSinceUpdate = now - user.localReceivedTime;
-                        if (elapsedSinceUpdate < 0) elapsedSinceUpdate = 0; // Negatif farkı önle
+                        if (elapsedSinceUpdate < 0) elapsedSinceUpdate = 0; 
                         
                         let totalElapsed = user.elapsedTime + elapsedSinceUpdate;
                         
@@ -2193,16 +2221,16 @@
                         <div style="background:rgba(255,255,255,0.05); padding:10px; border-radius:10px; margin-bottom:10px; display:flex; justify-content:space-between; align-items:center;">
                             <div>
                                 <strong style="color:#60a5fa;">${user.email}</strong><br>
-                                <span style="font-size:0.7rem; color:#94a3b8;">${user.isTimerMode ? 'Geri Sayım' : 'Kronometre'} - ${user.isRunning ? 'Aktif 🟢' : 'Duraklatıldı ⏸️'}</span>
+                                <span style="font-size:0.7rem; color:${stateColor};">${user.isTimerMode ? 'Geri Sayım' : 'Kronometre'} - ${stateText}</span>
                             </div>
-                            <div style="font-size:1.2rem; font-family:monospace; font-weight:bold; color:${user.isRunning ? '#4ade80' : '#f87171'}">
+                            <div style="font-size:1.2rem; font-family:monospace; font-weight:bold; color:${stateColor}">
                                 ${displayTime}
                             </div>
                         </div>
                     `;
                 });
                 
-                if (Object.keys(activeUsersData).length === 0) {
+                if (Object.keys(uniqueUsers).length === 0) {
                     html = '<div style="text-align:center; color:#94a3b8; font-size:0.9rem; margin-top:20px;">Şu an aktif bir kullanıcı yok.</div>';
                 }
                 
@@ -2342,7 +2370,13 @@
             
             liveStatusTimeout = setTimeout(async () => {
                 let running = isTimerMode ? isTmRunning : isSwRunning;
-                let elapsed = isTimerMode ? tmElapsedTime : swElapsedTime;
+                
+                // HATA DÜZELTİLDİ: Eğer kronometre çalışıyorsa, sadece duraklatıldığı andaki statik süreyi değil,
+                // O ana kadar geçen GERÇEK toplam süreyi hesaplayıp kaydetmeliyiz.
+                let elapsed = isTimerMode ? 
+                    (tmElapsedTime + (isTmRunning ? Date.now() - tmStartTime : 0)) : 
+                    (swElapsedTime + (isSwRunning ? Date.now() - swStartTime : 0));
+                    
                 let dur = isTimerMode ? timerDuration : 0;
                 
                 try {
@@ -2963,6 +2997,13 @@
                 };
             }
         }
+
+        window.addEventListener('beforeunload', () => {
+            if (currentUser) {
+                // Asenkron silme denemesi (çıkış yaparken hayalet veriyi temizle)
+                deleteDoc(doc(db, "live_status", currentUser.uid + "_" + CURRENT_SESSION_ID)).catch(()=>{});
+            }
+        });
 
     </script>
 </body>
