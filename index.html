@@ -211,25 +211,76 @@
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            padding-right: 5px;
+            gap: 20px;
+            padding-right: 15px;
+            padding-left: 20px;
+            position: relative;
         }
         .records-list::-webkit-scrollbar { width: 5px; }
         .records-list::-webkit-scrollbar-track { background: transparent; }
         .records-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
+        
+        .records-list::before {
+            content: ''; position: absolute; left: 10px; top: 10px; bottom: 10px; width: 2px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+            border-radius: 2px;
+        }
 
         .record-item {
-            background: linear-gradient(135deg, rgba(255,255,255,0.05), rgba(255,255,255,0.01));
+            position: relative;
+            background: rgba(15, 23, 42, 0.4);
+            backdrop-filter: blur(10px);
             padding: 15px 20px;
             border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-            transition: transform 0.2s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            width: 100%;
         }
-        .record-item:hover { transform: translateX(-3px); }
+        .record-item::before {
+            content: ''; position: absolute; left: -14px; top: 50%; transform: translateY(-50%);
+            width: 10px; height: 10px; border-radius: 50%; background: var(--accent-red);
+            box-shadow: 0 0 10px var(--accent-red), 0 0 20px var(--accent-red); z-index: 2;
+        }
+        .record-item::after {
+            content: ''; position: absolute; left: -10px; top: 50%; width: 10px; height: 2px;
+            background: rgba(255,255,255,0.2); z-index: 1;
+        }
+        .record-item:hover { transform: translateX(5px); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); box-shadow: 0 8px 25px rgba(0,0,0,0.5); }
+
+        /* AMBIENT GLOW */
+        #ambient-glow-container {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none;
+            z-index: 0; background: radial-gradient(circle at center, var(--accent-red) 0%, transparent 60%);
+            opacity: 0; transition: opacity 1s ease; mix-blend-mode: screen;
+        }
+        #ambient-glow-container.active { animation: breathGlow 4s infinite ease-in-out; }
+        @keyframes breathGlow { 0% { opacity: 0.05; transform: scale(0.95); } 50% { opacity: 0.35; transform: scale(1.1); } 100% { opacity: 0.05; transform: scale(0.95); } }
+        
+        /* GÖRSEL İSTATİSTİK GRAFİĞİ CSS */
+        .chart-container {
+            display: flex; align-items: flex-end; justify-content: space-between; height: 80px;
+            margin-top: 15px; padding-bottom: 5px; border-bottom: 1px solid rgba(255,255,255,0.1); gap: 5px;
+        }
+        .chart-bar-wrapper {
+            display: flex; flex-direction: column; align-items: center; flex: 1; height: 100%; justify-content: flex-end; position: relative;
+        }
+        .chart-bar {
+            width: 100%; max-width: 12px; background: var(--accent-red); border-radius: 4px 4px 0 0;
+            transition: height 1.5s cubic-bezier(0.4, 0, 0.2, 1), filter 0.3s;
+            box-shadow: 0 0 10px var(--accent-red); min-height: 2px; cursor: pointer;
+        }
+        .chart-bar:hover { filter: brightness(1.3); }
+        .chart-label { font-size: 0.6rem; color: #94a3b8; margin-top: 5px; }
+        .chart-tooltip {
+            position: absolute; top: -30px; background: rgba(0,0,0,0.8); color: #fff; padding: 4px 8px;
+            border-radius: 4px; font-size: 0.65rem; pointer-events: none; opacity: 0; transition: opacity 0.2s;
+            white-space: nowrap; border: 1px solid rgba(255,255,255,0.1); z-index: 10;
+        }
+        .chart-bar-wrapper:hover .chart-tooltip { opacity: 1; }
         .record-time { 
             font-variant-numeric: tabular-nums; 
             font-weight: 400; 
@@ -1182,6 +1233,9 @@
             </div>
         </div>
     </div>
+    
+    <!-- AMBIENT GLOW CONTAINER -->
+    <div id="ambient-glow-container"></div>
 
     <!-- SIDEBAR FOR RECORDS -->
     <div id="sidebar" class="sidebar">
@@ -1294,10 +1348,10 @@
         <div style="margin-top: 10px;">
             <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#94a3b8; margin-bottom:4px;">
                 <span>Son 7 Günlük Aktiflik</span>
-                <span>%100</span>
             </div>
-            <div class="stat-bar-container">
-                <div id="stat-activity-bar" class="stat-bar"></div>
+            <!-- YENİ DETAYLI GRAFİK (CHART) -->
+            <div id="activity-chart" class="chart-container">
+                <!-- Javascript ile doldurulacak -->
             </div>
         </div>
     </div>
@@ -1647,6 +1701,9 @@
                 userPic.src = user.photoURL;
                 btnSave.style.display = 'inline-block';
                 btnShowRecords.style.display = 'flex';
+                
+                const btnStats = document.getElementById('btn-stats-toggle');
+                if (btnStats) btnStats.style.display = 'inline-flex';
                 
                 loadRecords(user.uid);
                 updateLiveStatus();
@@ -2046,16 +2103,54 @@
         function updateStats(docsArray) {
             document.getElementById('stat-total-sessions').textContent = docsArray.length;
             let totalMs = 0;
+            
+            // Son 7 günün tarihlerini hazırla
+            const now = new Date();
+            const daysMap = {};
+            for(let i = 6; i >= 0; i--) {
+                const d = new Date(now);
+                d.setDate(d.getDate() - i);
+                const dateStr = `${d.getDate()}/${d.getMonth()+1}`;
+                daysMap[dateStr] = { ms: 0, dateStr: dateStr };
+            }
+            
             docsArray.forEach(d => {
-                if (d.data().rawTime) totalMs += d.data().rawTime;
+                const data = d.data();
+                if (data.rawTime) totalMs += data.rawTime;
+                
+                // Grafik verilerini topla
+                if (data.timestamp) {
+                    const docDate = data.timestamp.toDate();
+                    const dStr = `${docDate.getDate()}/${docDate.getMonth()+1}`;
+                    if (daysMap[dStr]) {
+                        daysMap[dStr].ms += (data.rawTime || 0);
+                    }
+                }
             });
             const h = Math.floor(totalMs / 3600000);
             const m = Math.floor((totalMs % 3600000) / 60000);
             document.getElementById('stat-total-time').textContent = `${h}s ${m}d`;
             
             setTimeout(() => {
-                const perc = Math.min(100, Math.max(5, (docsArray.length * 5)));
-                document.getElementById('stat-activity-bar').style.width = perc + '%';
+                const chartContainer = document.getElementById('activity-chart');
+                if(chartContainer) {
+                    let maxMs = 1; // 0'a bölme hatasını önle
+                    Object.values(daysMap).forEach(day => { if(day.ms > maxMs) maxMs = day.ms; });
+                    
+                    let html = '';
+                    Object.values(daysMap).forEach(day => {
+                        const perc = Math.max(5, (day.ms / maxMs) * 100);
+                        const mins = Math.round(day.ms / 60000);
+                        html += `
+                            <div class="chart-bar-wrapper">
+                                <div class="chart-tooltip">${mins} dk</div>
+                                <div class="chart-bar" style="height: ${perc}%"></div>
+                                <div class="chart-label">${day.dateStr}</div>
+                            </div>
+                        `;
+                    });
+                    chartContainer.innerHTML = html;
+                }
             }, 100);
         }
 
@@ -2405,10 +2500,13 @@
         
         function updateIdleState() {
             const controls = document.querySelector('.controls');
+            const ambient = document.getElementById('ambient-glow-container');
             if (!isSwRunning && !isTmRunning) {
                 controls.classList.add('idle');
+                if (ambient) ambient.classList.remove('active');
             } else {
                 controls.classList.remove('idle');
+                if (ambient) ambient.classList.add('active');
             }
         }
 
