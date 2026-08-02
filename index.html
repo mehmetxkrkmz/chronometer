@@ -21,6 +21,9 @@
             --bg-anim-speed: 15s;
             --glass-opacity: 0.03;
             --main-font: 'Montserrat', sans-serif;
+            --zen-glow-color: #8b5cf6;
+            --zen-breath-size: 150px;
+            --zen-breath-speed: 12s;
         }
 
         * {
@@ -642,19 +645,33 @@
             opacity: 1;
         }
         .admin-modal-content {
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(10, 15, 30, 0.65);
+            backdrop-filter: blur(35px);
+            -webkit-backdrop-filter: blur(35px);
             border: 1px solid rgba(255,255,255,0.1);
-            padding: 30px;
-            border-radius: 20px;
-            width: 90%;
-            max-width: 750px;
-            min-height: 450px;
+            border-top: 1px solid rgba(255,255,255,0.2);
+            border-left: 1px solid rgba(255,255,255,0.15);
+            padding: 35px;
+            border-radius: 24px;
+            border-radius: 24px;
+            width: 95%;
+            max-width: 850px;
+            min-height: 500px;
+            max-height: 85vh;
+            overflow-y: auto;
             position: relative;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            transform: scale(0.9);
-            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
+            box-shadow: 0 40px 80px rgba(0,0,0,0.8), inset 0 0 30px rgba(255,255,255,0.02);
+            transform: scale(0.95);
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-align: left;
+            color: #f8fafc;
         }
+        
+        /* Custom Scrollbar for Admin Panel */
+        .admin-modal-content ::-webkit-scrollbar { width: 5px; height: 5px; }
+        .admin-modal-content ::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius: 10px; }
+        .admin-modal-content ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 10px; }
+        .admin-modal-content ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
         .admin-modal.show .admin-modal-content {
             transform: scale(1);
         }
@@ -761,45 +778,54 @@
             gap: 20px;
         }
         .admin-sidebar {
-            width: 200px;
+            width: 220px;
             display: flex;
             flex-direction: column;
-            gap: 10px;
-            border-right: 1px solid rgba(255,255,255,0.1);
-            padding-right: 15px;
+            gap: 8px;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            padding-right: 20px;
         }
         .admin-sidebar-title {
             font-size: 0.75rem;
             text-transform: uppercase;
             color: #64748b;
-            letter-spacing: 1px;
-            margin-bottom: 10px;
-            font-weight: bold;
+            letter-spacing: 1.5px;
+            margin-bottom: 15px;
+            font-weight: 600;
+            padding-left: 12px;
         }
         .admin-main-area {
             flex: 1;
             position: relative;
+            padding-left: 10px;
         }
         .admin-tab {
             background: transparent;
-            border: none;
-            color: rgba(255,255,255,0.5);
-            font-size: 0.9rem;
-            padding: 10px 12px;
+            border: 1px solid transparent;
+            color: rgba(255,255,255,0.6);
+            font-size: 0.95rem;
+            padding: 12px 15px;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.2s;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: left;
             width: 100%;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
         .admin-tab:hover {
-            background: rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.8);
+            background: rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.9);
+            transform: translateX(3px);
         }
         .admin-tab.active {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
             color: #fff;
             font-weight: 500;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transform: translateX(5px);
         }
         .admin-tab-content {
             display: none;
@@ -870,16 +896,22 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 8px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            padding: 12px 16px;
+            border-radius: 12px;
             margin-top: 10px;
+            transition: background 0.3s, transform 0.2s;
+        }
+        .toggle-container:hover {
+            background: rgba(255,255,255,0.05);
+            transform: translateY(-1px);
         }
         .switch {
             position: relative;
             display: inline-block;
             width: 50px;
-            height: 24px;
+            height: 26px;
         }
         .switch input { 
             opacity: 0;
@@ -890,30 +922,62 @@
             position: absolute;
             cursor: pointer;
             top: 0; left: 0; right: 0; bottom: 0;
-            background-color: rgba(255,255,255,0.2);
-            transition: .4s;
+            background-color: rgba(255,255,255,0.15);
+            transition: .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 26px;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
         }
         .slider:before {
             position: absolute;
             content: "";
-            height: 18px;
-            width: 18px;
+            height: 20px;
+            width: 20px;
             left: 3px;
             bottom: 3px;
             background-color: white;
-            transition: .4s;
+            transition: .4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 50%;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
         input:checked + .slider {
-            background-color: #10b981; /* Emerald green */
+            background-color: #10b981;
+        }
+        input:focus + .slider {
+            box-shadow: 0 0 1px #10b981;
         }
         input:checked + .slider:before {
-            transform: translateX(26px);
+            transform: translateX(24px);
         }
-        .slider.round {
-            border-radius: 34px;
+        
+        /* MODERN RANGE SLIDER */
+        .admin-input-range {
+            -webkit-appearance: none;
+            width: 140px;
+            background: transparent;
+            cursor: pointer;
         }
-        .slider.round:before {
+        .admin-input-range:focus {
+            outline: none;
+        }
+        .admin-input-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
             border-radius: 50%;
+            background: #fff;
+            margin-top: -6px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.6);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .admin-input-range::-webkit-slider-thumb:hover {
+            transform: scale(1.3);
+            background: var(--accent-red);
+        }
+        .admin-input-range::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 2px;
         }
 
         /* DM AND INBOX BUTTONS */
@@ -1171,11 +1235,93 @@
             0% { transform: rotate(-45deg) translateX(0); opacity: 1; }
             100% { transform: rotate(-45deg) translateX(-1500px); opacity: 0; }
         }
+        
+        /* ZEN MODE CSS */
+        body.zen-mode .top-bar,
+        body.zen-mode .controls,
+        body.zen-mode .footer,
+        body.zen-mode .floating-action-btn,
+        body.zen-mode .camouflaged-inbox {
+            opacity: 0 !important;
+            pointer-events: none !important;
+            transform: translateY(20px);
+        }
+        body.zen-mode .top-bar { transform: translateY(-20px) !important; }
+        
+        .top-bar, .controls, .footer, .floating-action-btn, .camouflaged-inbox {
+            transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+
+        #pulse-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 0; mix-blend-mode: screen;
+        }
+
+        #zen-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0,0,0,0.88); z-index: -1;
+            opacity: 0; transition: opacity 1.5s ease; pointer-events: none;
+        }
+        body.zen-mode { animation: none !important; }
+        body.zen-mode #zen-overlay { opacity: 1; }
+
+        @keyframes zenBreathGlow { 
+            0% { box-shadow: inset 0 0 calc(var(--zen-breath-size) * 0.2) color-mix(in srgb, var(--zen-glow-color) 10%, transparent); opacity: 0.3; } 
+            35% { box-shadow: inset 0 0 calc(var(--zen-breath-size) * 0.8) color-mix(in srgb, var(--zen-glow-color) 60%, transparent); opacity: 0.8; }
+            45% { box-shadow: inset 0 0 var(--zen-breath-size) color-mix(in srgb, var(--zen-glow-color) 80%, transparent); opacity: 1; }
+            85% { box-shadow: inset 0 0 calc(var(--zen-breath-size) * 0.2) color-mix(in srgb, var(--zen-glow-color) 10%, transparent); opacity: 0.3; }
+            100% { box-shadow: inset 0 0 calc(var(--zen-breath-size) * 0.2) color-mix(in srgb, var(--zen-glow-color) 10%, transparent); opacity: 0.3; }
+        }
+        body.zen-mode #pulse-overlay {
+            background: transparent;
+            animation: zenBreathGlow var(--zen-breath-speed) cubic-bezier(0.4, 0, 0.2, 1) infinite !important;
+            opacity: 1;
+            filter: none;
+            transform: none;
+        }
+        body.zen-mode .star { animation-duration: 10s !important; }
+
+        body.zen-mode .ms-container, body.time-hide-ms .ms-container { opacity: 0; font-size: 0; pointer-events: none; margin: 0; padding: 0; }
+        .ms-container { display: inline-block; font-size: 0.45em; opacity: 1; vertical-align: bottom; transition: opacity 1.5s ease, font-size 1.5s ease, margin 1.5s ease, padding 1.5s ease; white-space: nowrap; }
+
+        body.zen-mode-deep #seconds,
+        body.zen-mode-deep #view-digital .colon:nth-child(4),
+        body.zen-mode-deep #timer-seconds,
+        body.zen-mode-deep #view-timer .colon:nth-child(4),
+        body.time-hide-sec #seconds,
+        body.time-hide-sec #view-digital .colon:nth-child(4),
+        body.time-hide-sec #timer-seconds,
+        body.time-hide-sec #view-timer .colon:nth-child(4) {
+            opacity: 0; font-size: 0; width: 0; min-width: 0; pointer-events: none; padding: 0; margin: 0; border: none; 
+        }
+        #seconds, #timer-seconds, .colon { display: inline-block; font-size: 1em; opacity: 1; vertical-align: bottom; transition: opacity 2.5s ease, font-size 2.5s ease, padding 2.5s ease, margin 2.5s ease, width 2.5s ease, min-width 2.5s ease; white-space: nowrap; }
+
+        /* ZEN MODE TOAST NOTIFICATIONS */
+        body.zen-mode .toast-container {
+            top: auto;
+            bottom: 40px;
+        }
+        body.zen-mode .toast-msg {
+            background: rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255,255,255,0.05);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            animation: slideUpToast 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+            color: rgba(255,255,255,0.8);
+        }
+        body.zen-mode .toast-msg svg { opacity: 0.5; }
+        @keyframes slideUpToast {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        body.zen-mode .view-area { transform: translateY(50px); transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1); }
     </style>
 </head>
 <body>
     <div id="stars-container"></div>
     <div id="pulse-overlay" class="pulse-overlay"></div>
+    <div id="zen-overlay"></div>
 
     <!-- TOP BAR -->
     <div class="top-bar">
@@ -1481,7 +1627,7 @@
                                     <strong>Yıldız Yoğunluğu (<span id="star-density-val">100</span>)</strong><br>
                                     <span style="font-size:0.8rem; color:#94a3b8;">Arka plandaki minik yıldızların sayısı</span>
                                 </div>
-                                <input type="range" id="admin-star-density" min="0" max="300" value="100" style="width: 130px; cursor: pointer;">
+                                <input type="range" id="admin-star-density" min="0" max="300" value="100" class="admin-input-range">
                             </div>
 
                             <div class="toggle-container" style="margin-top: 15px;">
@@ -1489,7 +1635,7 @@
                                     <strong>Kayan Yıldız Hızı (<span id="star-freq-val">3</span>s)</strong><br>
                                     <span style="font-size:0.8rem; color:#94a3b8;">Kaç saniyede bir kayan yıldız geçsin? (0 = Kapalı)</span>
                                 </div>
-                                <input type="range" id="admin-star-freq" min="0" max="15" value="3" style="width: 130px; cursor: pointer;">
+                                <input type="range" id="admin-star-freq" min="0" max="15" value="3" class="admin-input-range">
                             </div>
 
                             <div class="toggle-container" style="margin-top: 15px;">
@@ -1497,7 +1643,7 @@
                                     <strong>Arka Plan Renk Hızı (<span id="bg-speed-val">15</span>s)</strong><br>
                                     <span style="font-size:0.8rem; color:#94a3b8;">Renklerin geçiş hızı</span>
                                 </div>
-                                <input type="range" id="admin-bg-speed" min="5" max="60" value="15" style="width: 130px; cursor: pointer;">
+                                <input type="range" id="admin-bg-speed" min="5" max="60" value="15" class="admin-input-range">
                             </div>
                             
                             <div class="toggle-container" style="margin-top: 15px;">
@@ -1505,7 +1651,7 @@
                                     <strong>Cam Efekti Şeffaflığı (<span id="glass-opacity-val">3</span>%)</strong><br>
                                     <span style="font-size:0.8rem; color:#94a3b8;">Kutuların ve panellerin saydamlığı</span>
                                 </div>
-                                <input type="range" id="admin-glass-opacity" min="0" max="20" value="3" style="width: 130px; cursor: pointer;">
+                                <input type="range" id="admin-glass-opacity" min="0" max="20" value="3" class="admin-input-range">
                             </div>
 
                             <div class="toggle-container" style="margin-top: 15px;">
@@ -1513,7 +1659,23 @@
                                     <strong>Yazı Parlaklığı (Glow) (<span id="glow-intensity-val">40</span>%)</strong><br>
                                     <span style="font-size:0.8rem; color:#94a3b8;">Sayıların etrafındaki parlama efekti</span>
                                 </div>
-                                <input type="range" id="admin-glow-intensity" min="0" max="100" value="40" style="width: 130px; cursor: pointer;">
+                                <input type="range" id="admin-glow-intensity" min="0" max="100" value="40" class="admin-input-range">
+                            </div>
+
+                            <div class="toggle-container" style="margin-top: 15px;">
+                                <div style="flex:1;">
+                                    <strong>Zen Nefes Boyutu (<span id="zen-breath-size-val">150</span>px)</strong><br>
+                                    <span style="font-size:0.8rem; color:#94a3b8;">Kenarlardan gelen ışığın derinliği</span>
+                                </div>
+                                <input type="range" id="admin-zen-breath-size" min="0" max="400" value="150" class="admin-input-range">
+                            </div>
+
+                            <div class="toggle-container" style="margin-top: 15px;">
+                                <div style="flex:1;">
+                                    <strong>Zen Nefes Hızı (<span id="zen-breath-speed-val">12</span>s)</strong><br>
+                                    <span style="font-size:0.8rem; color:#94a3b8;">Nefes alma döngüsünün süresi (saniye)</span>
+                                </div>
+                                <input type="range" id="admin-zen-breath-speed" min="4" max="30" value="12" class="admin-input-range">
                             </div>
                             
                             <div class="toggle-container" style="margin-top: 15px;">
@@ -1614,6 +1776,9 @@
         const viewAnalog = document.getElementById('view-analog');
         const viewDigital = document.getElementById('view-digital');
         const btnFullscreen = document.getElementById('btn-fullscreen');
+        
+        const btnMusicToggle = document.getElementById('btn-music-toggle');
+        // YouTube Müzik butonu sadece link olarak kaldı, iframe oynatıcı kaldırıldı.
 
         // -----------------------------------------------------
         // 3. UI TOGGLE & FULLSCREEN LOGIC
@@ -1811,6 +1976,8 @@
                         let bgSpeed = 15;
                         let glassOpacity = 3;
                         let fontF = "'Montserrat', sans-serif";
+                        let zenBreathSize = 150;
+                        let zenBreathSpeed = 12;
                         
                         if (docSnap.exists()) {
                             const data = docSnap.data();
@@ -1819,6 +1986,8 @@
                             if (data.bgSpeed !== undefined) bgSpeed = data.bgSpeed;
                             if (data.glassOpacity !== undefined) glassOpacity = data.glassOpacity;
                             if (data.fontFamily !== undefined) fontF = data.fontFamily;
+                            if (data.zenBreathSize !== undefined) zenBreathSize = data.zenBreathSize;
+                            if (data.zenBreathSpeed !== undefined) zenBreathSpeed = data.zenBreathSpeed;
                         }
                         
                         const msToggleInput = document.getElementById('admin-ms-toggle');
@@ -1844,11 +2013,21 @@
                         if (document.getElementById('admin-font-select')) {
                             document.getElementById('admin-font-select').value = fontF;
                         }
+                        if (document.getElementById('admin-zen-breath-size')) {
+                            document.getElementById('admin-zen-breath-size').value = zenBreathSize;
+                            document.getElementById('zen-breath-size-val').textContent = zenBreathSize;
+                        }
+                        if (document.getElementById('admin-zen-breath-speed')) {
+                            document.getElementById('admin-zen-breath-speed').value = zenBreathSpeed;
+                            document.getElementById('zen-breath-speed-val').textContent = zenBreathSpeed;
+                        }
                         
                         document.documentElement.style.setProperty('--glow-alpha', glowLevel / 100);
                         document.documentElement.style.setProperty('--bg-anim-speed', bgSpeed + 's');
                         document.documentElement.style.setProperty('--glass-opacity', glassOpacity / 100);
                         document.documentElement.style.setProperty('--main-font', fontF);
+                        document.documentElement.style.setProperty('--zen-breath-size', zenBreathSize + 'px');
+                        document.documentElement.style.setProperty('--zen-breath-speed', zenBreathSpeed + 's');
                     });
                 }
 
@@ -2065,6 +2244,7 @@
                     root.style.setProperty('--bg-color-4', '#08121f');
                     root.style.setProperty('--bg-color-5', '#171717');
                     root.style.setProperty('--accent-red', '#f43f5e');
+                    root.style.setProperty('--zen-glow-color', '#8b5cf6');
                 } else if (theme === 'emerald') {
                     root.style.setProperty('--bg-color-1', '#022c22');
                     root.style.setProperty('--bg-color-2', '#064e3b');
@@ -2072,6 +2252,7 @@
                     root.style.setProperty('--bg-color-4', '#042f2e');
                     root.style.setProperty('--bg-color-5', '#022c22');
                     root.style.setProperty('--accent-red', '#34d399');
+                    root.style.setProperty('--zen-glow-color', '#34d399');
                 } else if (theme === 'ruby') {
                     root.style.setProperty('--bg-color-1', '#2a0808');
                     root.style.setProperty('--bg-color-2', '#450a0a');
@@ -2079,6 +2260,7 @@
                     root.style.setProperty('--bg-color-4', '#3a0808');
                     root.style.setProperty('--bg-color-5', '#220303');
                     root.style.setProperty('--accent-red', '#ef4444');
+                    root.style.setProperty('--zen-glow-color', '#ef4444');
                 } else if (theme === 'gold') {
                     root.style.setProperty('--bg-color-1', '#1e1604');
                     root.style.setProperty('--bg-color-2', '#332607');
@@ -2086,6 +2268,7 @@
                     root.style.setProperty('--bg-color-4', '#2b1f05');
                     root.style.setProperty('--bg-color-5', '#1a1202');
                     root.style.setProperty('--accent-red', '#fbbf24');
+                    root.style.setProperty('--zen-glow-color', '#fbbf24');
                 }
                 themePanel.classList.remove('show');
             });
@@ -2393,6 +2576,17 @@
             secondHand.style.transform = `rotate(${secondsDegrees}deg)`;
             minuteHand.style.transform = `rotate(${minutesDegrees}deg)`;
             hourHand.style.transform = `rotate(${hoursDegrees}deg)`;
+            
+            if (!document.body.classList.contains('zen-mode')) {
+                if (time >= 3600000) {
+                    document.body.classList.add('time-hide-sec', 'time-hide-ms');
+                } else if (time >= 60000) {
+                    document.body.classList.add('time-hide-ms');
+                    document.body.classList.remove('time-hide-sec');
+                } else {
+                    document.body.classList.remove('time-hide-ms', 'time-hide-sec');
+                }
+            }
         }
 
         let timerDuration = 0;
@@ -2407,6 +2601,7 @@
                 timerHoursEl.value = '00';
                 timerMinutesEl.value = '00';
                 timerSecondsEl.value = '00';
+                document.body.classList.remove('time-hide-ms', 'time-hide-sec');
                 return;
             }
             const totalSeconds = Math.ceil(remaining / 1000);
@@ -2417,6 +2612,17 @@
             timerHoursEl.value = formatNumber(hours, 2);
             timerMinutesEl.value = formatNumber(minutes, 2);
             timerSecondsEl.value = formatNumber(seconds, 2);
+            
+            if (!document.body.classList.contains('zen-mode')) {
+                if (remaining >= 3600000) {
+                    document.body.classList.add('time-hide-sec', 'time-hide-ms');
+                } else if (remaining >= 60000) {
+                    document.body.classList.add('time-hide-ms');
+                    document.body.classList.remove('time-hide-sec');
+                } else {
+                    document.body.classList.remove('time-hide-ms', 'time-hide-sec');
+                }
+            }
         }
 
         function animationLoop() {
@@ -2498,6 +2704,44 @@
             }, 800); // 800ms debounce
         }
         
+        let zenTimeout = null;
+        let zenDeepTimeout = null;
+        let zenFullscreenTimeout = null;
+
+        function enterFullscreenSafe() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(e => console.log(e));
+            }
+        }
+
+        function resetZenTimer() {
+            document.body.classList.remove('zen-mode', 'zen-mode-deep');
+            if (zenTimeout) clearTimeout(zenTimeout);
+            if (zenDeepTimeout) clearTimeout(zenDeepTimeout);
+            if (zenFullscreenTimeout) clearTimeout(zenFullscreenTimeout);
+            
+            if (isSwRunning || isTmRunning) {
+                zenTimeout = setTimeout(() => {
+                    document.body.classList.add('zen-mode');
+                    if (sidebar.classList.contains('open')) closeSidebar.click();
+                    const themePanel = document.getElementById('theme-panel');
+                    const statsPanel = document.getElementById('stats-panel');
+                    if(themePanel) themePanel.classList.remove('show');
+                    if(statsPanel) statsPanel.classList.remove('show');
+                    
+                    zenFullscreenTimeout = setTimeout(enterFullscreenSafe, 5000);
+                    
+                    zenDeepTimeout = setTimeout(() => {
+                        document.body.classList.add('zen-mode-deep');
+                    }, 300000); // 5 minutes (300,000 ms)
+                }, 5000);
+            }
+        }
+        
+        ['mousemove', 'keydown', 'click', 'touchstart'].forEach(evt => {
+            document.addEventListener(evt, resetZenTimer);
+        });
+
         function updateIdleState() {
             const controls = document.querySelector('.controls');
             const ambient = document.getElementById('ambient-glow-container');
@@ -2508,6 +2752,7 @@
                 controls.classList.remove('idle');
                 if (ambient) ambient.classList.add('active');
             }
+            resetZenTimer();
         }
 
         document.getElementById('start-btn').addEventListener('click', () => {
@@ -2825,6 +3070,25 @@
         });
         document.getElementById('admin-bg-speed').addEventListener('change', async (e) => {
             try { await setDoc(doc(db, "settings", "display_config"), { bgSpeed: parseInt(e.target.value) }, { merge: true }); } catch (err) { }
+        });
+        
+        // Admin Zen Breath Logic
+        document.getElementById('admin-zen-breath-size').addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.getElementById('zen-breath-size-val').textContent = val;
+            document.documentElement.style.setProperty('--zen-breath-size', val + 'px');
+        });
+        document.getElementById('admin-zen-breath-size').addEventListener('change', async (e) => {
+            try { await setDoc(doc(db, "settings", "display_config"), { zenBreathSize: parseInt(e.target.value) }, { merge: true }); } catch (err) { }
+        });
+
+        document.getElementById('admin-zen-breath-speed').addEventListener('input', (e) => {
+            const val = e.target.value;
+            document.getElementById('zen-breath-speed-val').textContent = val;
+            document.documentElement.style.setProperty('--zen-breath-speed', val + 's');
+        });
+        document.getElementById('admin-zen-breath-speed').addEventListener('change', async (e) => {
+            try { await setDoc(doc(db, "settings", "display_config"), { zenBreathSpeed: parseInt(e.target.value) }, { merge: true }); } catch (err) { }
         });
         
         // Admin Glass Opacity Logic
