@@ -1054,7 +1054,7 @@
             font-family: inherit;
             font-size: 6rem;
             font-weight: 300;
-            width: 120px;
+            width: 160px;
             text-align: center;
             outline: none !important;
             text-shadow: 
@@ -1281,20 +1281,17 @@
         }
         body.zen-mode .star { animation-duration: 10s !important; }
 
-        body.zen-mode .ms-container, body.time-hide-ms .ms-container { opacity: 0; font-size: 0; pointer-events: none; margin: 0; padding: 0; }
+        body.time-hide-ms .ms-container { opacity: 0; font-size: 0; pointer-events: none; margin: 0; padding: 0; }
         .ms-container { display: inline-block; font-size: 0.45em; opacity: 1; vertical-align: bottom; transition: opacity 1.5s ease, font-size 1.5s ease, margin 1.5s ease, padding 1.5s ease; white-space: nowrap; }
 
-        body.zen-mode-deep #seconds,
-        body.zen-mode-deep #view-digital .colon:nth-child(4),
-        body.zen-mode-deep #timer-seconds,
-        body.zen-mode-deep #view-timer .colon:nth-child(4),
         body.time-hide-sec #seconds,
         body.time-hide-sec #view-digital .colon:nth-child(4),
         body.time-hide-sec #timer-seconds,
         body.time-hide-sec #view-timer .colon:nth-child(4) {
             opacity: 0; font-size: 0; width: 0; min-width: 0; pointer-events: none; padding: 0; margin: 0; border: none; 
         }
-        #seconds, #timer-seconds, .colon { display: inline-block; font-size: 1em; opacity: 1; vertical-align: bottom; transition: opacity 2.5s ease, font-size 2.5s ease, padding 2.5s ease, margin 2.5s ease, width 2.5s ease, min-width 2.5s ease; white-space: nowrap; }
+        #seconds, .colon { display: inline-block; font-size: 1em; opacity: 1; vertical-align: bottom; transition: opacity 2.5s ease, font-size 2.5s ease, padding 2.5s ease, margin 2.5s ease, width 2.5s ease, min-width 2.5s ease; white-space: nowrap; }
+        #timer-seconds { display: inline-block; opacity: 1; vertical-align: bottom; transition: opacity 2.5s ease, font-size 2.5s ease, padding 2.5s ease, margin 2.5s ease, width 2.5s ease, min-width 2.5s ease; white-space: nowrap; }
 
         /* ZEN MODE TOAST NOTIFICATIONS */
         body.zen-mode .toast-container {
@@ -1331,9 +1328,10 @@
                 <button id="btn-analog">Analog</button>
                 <button id="btn-timer">Geri Sayım</button>
             </div>
-            <button id="btn-theme-toggle" class="btn-icon" title="Tema Seç">
+            <button id="btn-settings-toggle" class="btn-icon" title="Ayarlar">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
                 </svg>
             </button>
             <button id="btn-music-toggle" class="btn-icon" title="Müzik Çalar">
@@ -1455,27 +1453,129 @@
     <!-- TOAST NOTIFICATION CONTAINER -->
     <div id="toast-container" class="toast-container"></div>
 
-    <!-- THEME PANEL -->
-    <div id="theme-panel" class="theme-panel">
-        <div class="panel-section">
-            <div class="panel-title">Renk Temaları (Yıldızlı)</div>
-            <div class="theme-options">
-        <div class="theme-option" data-theme="default">
-            <div class="theme-circle" style="background: #2e1065; color: #f43f5e;"></div>
-            <span>Gece Mavisi (Varsayılan)</span>
-        </div>
-        <div class="theme-option" data-theme="emerald">
-            <div class="theme-circle" style="background: #064e3b; color: #10b981;"></div>
-            <span>Zümrüt Yeşili</span>
-        </div>
-        <div class="theme-option" data-theme="ruby">
-            <div class="theme-circle" style="background: #450a0a; color: #ef4444;"></div>
-            <span>Yakut Kırmızısı</span>
-        </div>
-        <div class="theme-option" data-theme="gold">
-            <div class="theme-circle" style="background: #fbbf24; color: #f59e0b;"></div>
-            <span>Güneş Sarısı</span>
-        </div>
+    <!-- USER SETTINGS MODAL -->
+    <div id="user-settings-modal" class="admin-modal">
+        <div class="admin-modal-content" style="max-width: 700px; min-height: 400px;">
+            <div class="admin-close" id="user-settings-close">&times;</div>
+            <h2>Kişisel Ayarlar</h2>
+            
+            <div class="admin-dashboard-layout" style="min-height: 350px;">
+                <!-- SIDEBAR -->
+                <div class="admin-sidebar" style="width: 180px;">
+                    <div class="admin-sidebar-title">Kategoriler</div>
+                    <button class="admin-tab user-setting-tab active" data-target="user-tab-time">⏱️ Zaman</button>
+                    <button class="admin-tab user-setting-tab" data-target="user-tab-appearance">🎨 Görünüm</button>
+                    <button class="admin-tab user-setting-tab" data-target="user-tab-effects">✨ Efektler</button>
+                </div>
+
+                <!-- MAIN CONTENT -->
+                <div class="admin-main-area">
+                    
+                    <!-- TIME TAB -->
+                    <div id="user-tab-time" class="admin-tab-content active">
+                        <h3 style="margin-top:0;">Zaman Gösterimi</h3>
+                        
+                        <div class="toggle-container" style="margin-top: 15px;">
+                            <div style="flex:1;">
+                                <strong>Salise Gösterimi</strong><br>
+                                <span style="font-size:0.8rem; color:#94a3b8;">(Varsayılan: Otomatik gizle > 1 dk)</span>
+                            </div>
+                            <select id="user-ms-select" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 5px; border-radius: 5px; cursor: pointer;">
+                                <option value="auto">Otomatik Gizle</option>
+                                <option value="always">Her Zaman Göster</option>
+                                <option value="never">Hiç Gösterme</option>
+                            </select>
+                        </div>
+                        
+                        <div class="toggle-container" style="margin-top: 15px;">
+                            <div style="flex:1;">
+                                <strong>Saniye Gösterimi</strong><br>
+                                <span style="font-size:0.8rem; color:#94a3b8;">(Varsayılan: Otomatik gizle > 1 saat)</span>
+                            </div>
+                            <select id="user-sec-select" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 5px; border-radius: 5px; cursor: pointer;">
+                                <option value="auto">Otomatik Gizle</option>
+                                <option value="always">Her Zaman Göster</option>
+                                <option value="never">Hiç Gösterme</option>
+                            </select>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- APPEARANCE TAB -->
+                    <div id="user-tab-appearance" class="admin-tab-content">
+                        <h3 style="margin-top:0;">Görünüm & Tema</h3>
+                        
+                        <div style="margin-top: 15px;">
+                            <strong>Tema Seçimi</strong>
+                            <div class="theme-options" style="display:flex; flex-wrap:wrap; gap:10px; margin-top:10px;">
+                                <div class="theme-option user-theme-option" data-theme="default">
+                                    <div class="theme-circle" style="background: #2e1065; color: #f43f5e;"></div>
+                                    <span>Gece Mavisi</span>
+                                </div>
+                                <div class="theme-option user-theme-option" data-theme="emerald">
+                                    <div class="theme-circle" style="background: #064e3b; color: #10b981;"></div>
+                                    <span>Zümrüt Yeşili</span>
+                                </div>
+                                <div class="theme-option user-theme-option" data-theme="ruby">
+                                    <div class="theme-circle" style="background: #450a0a; color: #ef4444;"></div>
+                                    <span>Yakut Kırmızısı</span>
+                                </div>
+                                <div class="theme-option user-theme-option" data-theme="gold">
+                                    <div class="theme-circle" style="background: #fbbf24; color: #f59e0b;"></div>
+                                    <span>Güneş Sarısı</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="toggle-container" style="margin-top: 25px;">
+                            <div style="flex:1;">
+                                <strong>Sistem Yazı Tipi</strong>
+                            </div>
+                            <select id="user-font-select" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 5px; border-radius: 5px; cursor: pointer;">
+                                <option value="'Montserrat', sans-serif">Modern (Montserrat)</option>
+                                <option value="'Share Tech Mono', monospace">Dijital (Retro)</option>
+                                <option value="'Courier New', Courier, monospace">Klasik (Daktilo)</option>
+                                <option value="'Great Vibes', cursive">Zarif (El Yazısı)</option>
+                            </select>
+                        </div>
+                        
+                    </div>
+                    
+                    <!-- EFFECTS TAB -->
+                    <div id="user-tab-effects" class="admin-tab-content">
+                        <h3 style="margin-top:0;">Görsel Efektler</h3>
+                        
+                        <div class="toggle-container" style="margin-top: 15px;">
+                            <div style="flex:1;">
+                                <strong>Yıldız Yoğunluğu (<span id="user-star-density-val">100</span>)</strong>
+                            </div>
+                            <input type="range" id="user-star-density" min="0" max="300" value="100" class="admin-input-range">
+                        </div>
+                        
+                        <div class="toggle-container" style="margin-top: 15px;">
+                            <div style="flex:1;">
+                                <strong>Arka Plan Renk Hızı (<span id="user-bg-speed-val">15</span>s)</strong>
+                            </div>
+                            <input type="range" id="user-bg-speed" min="5" max="60" value="15" class="admin-input-range">
+                        </div>
+                        
+                        <div class="toggle-container" style="margin-top: 15px;">
+                            <div style="flex:1;">
+                                <strong>Cam Efekti Şeffaflığı (<span id="user-glass-opacity-val">3</span>%)</strong>
+                            </div>
+                            <input type="range" id="user-glass-opacity" min="0" max="20" value="3" class="admin-input-range">
+                        </div>
+                        
+                        <div class="toggle-container" style="margin-top: 15px;">
+                            <div style="flex:1;">
+                                <strong>Yazı Parlaklığı (Glow) (<span id="user-glow-intensity-val">40</span>%)</strong>
+                            </div>
+                            <input type="range" id="user-glow-intensity" min="0" max="100" value="40" class="admin-input-range">
+                        </div>
+                        
+                    </div>
+                    
+                </div>
             </div>
         </div>
     </div>
@@ -1942,6 +2042,10 @@
                 // Dinleyici: Yıldız Ayarları
                 if (!unsubscribeStars) {
                     unsubscribeStars = onSnapshot(doc(db, "settings", "stars"), (docSnap) => {
+                        if (localStorage.getItem('premiumStopwatchSettings')) {
+                            // User has custom settings, ignore global firebase settings
+                            return;
+                        }
                         if (docSnap.exists()) {
                             const data = docSnap.data();
                             starDensity = data.density !== undefined ? data.density : 100;
@@ -1971,6 +2075,10 @@
                 // Dinleyici: Milisaniye Gösterimi Ayarı & Glow
                 if (!unsubscribeConfig) {
                     unsubscribeConfig = onSnapshot(doc(db, "settings", "display_config"), (docSnap) => {
+                        if (localStorage.getItem('premiumStopwatchSettings')) {
+                            // User has custom settings, ignore global firebase settings
+                            return;
+                        }
                         let showMs = true;
                         let glowLevel = 40;
                         let bgSpeed = 15;
@@ -2174,13 +2282,109 @@
         });
 
         // -----------------------------------------------------
-        // 5.5. THEME & STATS LOGIC
+        // 5.5. SETTINGS, THEME & STATS LOGIC
         // -----------------------------------------------------
-        const themeToggle = document.getElementById('btn-theme-toggle');
-        const themePanel = document.getElementById('theme-panel');
+        const settingsToggle = document.getElementById('btn-settings-toggle');
+        const userSettingsModal = document.getElementById('user-settings-modal');
+        const userSettingsClose = document.getElementById('user-settings-close');
         const statsToggle = document.getElementById('btn-stats-toggle');
         const statsPanel = document.getElementById('stats-panel');
         const starsContainer = document.getElementById('stars-container');
+
+        let userSettings = {
+            theme: 'default',
+            showMs: 'auto',
+            showSec: 'auto',
+            fontFamily: "'Montserrat', sans-serif",
+            starDensity: 100,
+            bgSpeed: 15,
+            glassOpacity: 3,
+            glowLevel: 40
+        };
+
+        function applyUserSettings() {
+            const root = document.documentElement;
+            const theme = userSettings.theme;
+            starsContainer.style.display = 'block';
+            
+            if (theme === 'default') {
+                root.style.setProperty('--bg-color-1', '#030305');
+                root.style.setProperty('--bg-color-2', '#0f172a');
+                root.style.setProperty('--bg-color-3', '#2e1065');
+                root.style.setProperty('--bg-color-4', '#08121f');
+                root.style.setProperty('--bg-color-5', '#171717');
+                root.style.setProperty('--accent-red', '#f43f5e');
+                root.style.setProperty('--zen-glow-color', '#8b5cf6');
+            } else if (theme === 'emerald') {
+                root.style.setProperty('--bg-color-1', '#022c22');
+                root.style.setProperty('--bg-color-2', '#064e3b');
+                root.style.setProperty('--bg-color-3', '#065f46');
+                root.style.setProperty('--bg-color-4', '#042f2e');
+                root.style.setProperty('--bg-color-5', '#022c22');
+                root.style.setProperty('--accent-red', '#34d399');
+                root.style.setProperty('--zen-glow-color', '#34d399');
+            } else if (theme === 'ruby') {
+                root.style.setProperty('--bg-color-1', '#2a0808');
+                root.style.setProperty('--bg-color-2', '#450a0a');
+                root.style.setProperty('--bg-color-3', '#7f1d1d');
+                root.style.setProperty('--bg-color-4', '#3a0808');
+                root.style.setProperty('--bg-color-5', '#220303');
+                root.style.setProperty('--accent-red', '#ef4444');
+                root.style.setProperty('--zen-glow-color', '#ef4444');
+            } else if (theme === 'gold') {
+                root.style.setProperty('--bg-color-1', '#1e1604');
+                root.style.setProperty('--bg-color-2', '#332607');
+                root.style.setProperty('--bg-color-3', '#664c0e');
+                root.style.setProperty('--bg-color-4', '#2b1f05');
+                root.style.setProperty('--bg-color-5', '#1a1202');
+                root.style.setProperty('--accent-red', '#fbbf24');
+                root.style.setProperty('--zen-glow-color', '#fbbf24');
+            }
+            
+            root.style.setProperty('--main-font', userSettings.fontFamily);
+            root.style.setProperty('--bg-anim-speed', userSettings.bgSpeed + 's');
+            root.style.setProperty('--glass-opacity', userSettings.glassOpacity / 100);
+            root.style.setProperty('--glow-alpha', userSettings.glowLevel / 100);
+            
+            starDensity = userSettings.starDensity;
+            initStars();
+            
+            if (typeof updateDisplay === 'function') {
+                updateDisplay(typeof swElapsedTime !== 'undefined' ? swElapsedTime : 0);
+            }
+        }
+
+        function loadUserSettings() {
+            const saved = localStorage.getItem('premiumStopwatchSettings');
+            if (saved) {
+                try {
+                    userSettings = { ...userSettings, ...JSON.parse(saved) };
+                } catch(e) {}
+            }
+            
+            // Populate UI
+            const setVal = (id, val) => { if (document.getElementById(id)) document.getElementById(id).value = val; };
+            const setText = (id, val) => { if (document.getElementById(id)) document.getElementById(id).textContent = val; };
+            
+            setVal('user-ms-select', userSettings.showMs);
+            setVal('user-sec-select', userSettings.showSec);
+            setVal('user-font-select', userSettings.fontFamily);
+            setVal('user-star-density', userSettings.starDensity);
+            setText('user-star-density-val', userSettings.starDensity);
+            setVal('user-bg-speed', userSettings.bgSpeed);
+            setText('user-bg-speed-val', userSettings.bgSpeed);
+            setVal('user-glass-opacity', userSettings.glassOpacity);
+            setText('user-glass-opacity-val', userSettings.glassOpacity);
+            setVal('user-glow-intensity', userSettings.glowLevel);
+            setText('user-glow-intensity-val', userSettings.glowLevel);
+            
+            applyUserSettings();
+        }
+
+        function saveUserSettings() {
+            localStorage.setItem('premiumStopwatchSettings', JSON.stringify(userSettings));
+            applyUserSettings();
+        }
 
         // Generate Stars
         function initStars() {
@@ -2190,7 +2394,6 @@
             }
             starsContainer.innerHTML = '';
             
-            // Generate twinkling stars based on density
             for (let i = 0; i < starDensity; i++) {
                 const star = document.createElement('div');
                 star.className = 'star';
@@ -2203,7 +2406,6 @@
                 starsContainer.appendChild(star);
             }
             
-            // Generate some shooting stars based on frequency (0 means off)
             if (starFrequency > 0) {
                 starIntervalId = setInterval(() => {
                     const shoot = document.createElement('div');
@@ -2216,70 +2418,89 @@
                 }, starFrequency * 1000);
             }
         }
-        initStars();
-
-        themeToggle.addEventListener('click', (e) => {
+        
+        settingsToggle.addEventListener('click', (e) => {
             e.stopPropagation();
-            themePanel.classList.toggle('show');
+            userSettingsModal.classList.add('show');
             statsPanel.classList.remove('show');
+        });
+        
+        userSettingsClose.addEventListener('click', () => {
+            userSettingsModal.classList.remove('show');
         });
 
         statsToggle.addEventListener('click', (e) => {
             e.stopPropagation();
             statsPanel.classList.toggle('show');
-            themePanel.classList.remove('show');
+            userSettingsModal.classList.remove('show');
         });
-
-        document.querySelectorAll('.theme-option').forEach(opt => {
-            opt.addEventListener('click', () => {
-                const root = document.documentElement;
-                const theme = opt.getAttribute('data-theme');
-                
-                starsContainer.style.display = 'block';
-
-                if (theme === 'default') {
-                    root.style.setProperty('--bg-color-1', '#030305');
-                    root.style.setProperty('--bg-color-2', '#0f172a');
-                    root.style.setProperty('--bg-color-3', '#2e1065');
-                    root.style.setProperty('--bg-color-4', '#08121f');
-                    root.style.setProperty('--bg-color-5', '#171717');
-                    root.style.setProperty('--accent-red', '#f43f5e');
-                    root.style.setProperty('--zen-glow-color', '#8b5cf6');
-                } else if (theme === 'emerald') {
-                    root.style.setProperty('--bg-color-1', '#022c22');
-                    root.style.setProperty('--bg-color-2', '#064e3b');
-                    root.style.setProperty('--bg-color-3', '#065f46');
-                    root.style.setProperty('--bg-color-4', '#042f2e');
-                    root.style.setProperty('--bg-color-5', '#022c22');
-                    root.style.setProperty('--accent-red', '#34d399');
-                    root.style.setProperty('--zen-glow-color', '#34d399');
-                } else if (theme === 'ruby') {
-                    root.style.setProperty('--bg-color-1', '#2a0808');
-                    root.style.setProperty('--bg-color-2', '#450a0a');
-                    root.style.setProperty('--bg-color-3', '#7f1d1d');
-                    root.style.setProperty('--bg-color-4', '#3a0808');
-                    root.style.setProperty('--bg-color-5', '#220303');
-                    root.style.setProperty('--accent-red', '#ef4444');
-                    root.style.setProperty('--zen-glow-color', '#ef4444');
-                } else if (theme === 'gold') {
-                    root.style.setProperty('--bg-color-1', '#1e1604');
-                    root.style.setProperty('--bg-color-2', '#332607');
-                    root.style.setProperty('--bg-color-3', '#664c0e');
-                    root.style.setProperty('--bg-color-4', '#2b1f05');
-                    root.style.setProperty('--bg-color-5', '#1a1202');
-                    root.style.setProperty('--accent-red', '#fbbf24');
-                    root.style.setProperty('--zen-glow-color', '#fbbf24');
-                }
-                themePanel.classList.remove('show');
+        
+        // Modal Tabs Logic
+        document.querySelectorAll('.user-setting-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetId = tab.dataset.target;
+                const parentModal = tab.closest('.admin-modal-content');
+                parentModal.querySelectorAll('.user-setting-tab').forEach(t => t.classList.remove('active'));
+                parentModal.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById(targetId).classList.add('active');
             });
         });
 
+        // Event Listeners for User Settings
+        document.querySelectorAll('.user-theme-option').forEach(opt => {
+            opt.addEventListener('click', () => {
+                userSettings.theme = opt.getAttribute('data-theme');
+                saveUserSettings();
+            });
+        });
+        document.getElementById('user-ms-select').addEventListener('change', (e) => {
+            userSettings.showMs = e.target.value;
+            saveUserSettings();
+        });
+        document.getElementById('user-sec-select').addEventListener('change', (e) => {
+            userSettings.showSec = e.target.value;
+            saveUserSettings();
+        });
+        document.getElementById('user-font-select').addEventListener('change', (e) => {
+            userSettings.fontFamily = e.target.value;
+            saveUserSettings();
+        });
+        document.getElementById('user-star-density').addEventListener('input', (e) => {
+            document.getElementById('user-star-density-val').textContent = e.target.value;
+        });
+        document.getElementById('user-star-density').addEventListener('change', (e) => {
+            userSettings.starDensity = parseInt(e.target.value);
+            saveUserSettings();
+        });
+        document.getElementById('user-bg-speed').addEventListener('input', (e) => {
+            document.getElementById('user-bg-speed-val').textContent = e.target.value;
+        });
+        document.getElementById('user-bg-speed').addEventListener('change', (e) => {
+            userSettings.bgSpeed = parseInt(e.target.value);
+            saveUserSettings();
+        });
+        document.getElementById('user-glass-opacity').addEventListener('input', (e) => {
+            document.getElementById('user-glass-opacity-val').textContent = e.target.value;
+        });
+        document.getElementById('user-glass-opacity').addEventListener('change', (e) => {
+            userSettings.glassOpacity = parseInt(e.target.value);
+            saveUserSettings();
+        });
+        document.getElementById('user-glow-intensity').addEventListener('input', (e) => {
+            document.getElementById('user-glow-intensity-val').textContent = e.target.value;
+        });
+        document.getElementById('user-glow-intensity').addEventListener('change', (e) => {
+            userSettings.glowLevel = parseInt(e.target.value);
+            saveUserSettings();
+        });
+
         document.addEventListener('click', (e) => {
-            if (!themePanel.contains(e.target) && !themeToggle.contains(e.target)) {
-                themePanel.classList.remove('show');
-            }
             if (!statsPanel.contains(e.target) && !statsToggle.contains(e.target)) {
                 statsPanel.classList.remove('show');
+            }
+            if (userSettingsModal.classList.contains('show') && e.target === userSettingsModal) {
+                userSettingsModal.classList.remove('show');
             }
         });
 
@@ -2577,16 +2798,17 @@
             minuteHand.style.transform = `rotate(${minutesDegrees}deg)`;
             hourHand.style.transform = `rotate(${hoursDegrees}deg)`;
             
-            if (!document.body.classList.contains('zen-mode')) {
-                if (time >= 3600000) {
-                    document.body.classList.add('time-hide-sec', 'time-hide-ms');
-                } else if (time >= 60000) {
-                    document.body.classList.add('time-hide-ms');
-                    document.body.classList.remove('time-hide-sec');
-                } else {
-                    document.body.classList.remove('time-hide-ms', 'time-hide-sec');
-                }
-            }
+            let inZen = document.body.classList.contains('zen-mode');
+            let inZenDeep = document.body.classList.contains('zen-mode-deep');
+            
+            let hideMs = userSettings.showMs === 'never' || (userSettings.showMs === 'auto' && (time >= 60000 || inZen));
+            let hideSec = userSettings.showSec === 'never' || (userSettings.showSec === 'auto' && (time >= 3600000 || inZenDeep));
+            
+            if (hideMs) document.body.classList.add('time-hide-ms'); 
+            else document.body.classList.remove('time-hide-ms');
+            
+            if (hideSec) document.body.classList.add('time-hide-sec'); 
+            else document.body.classList.remove('time-hide-sec');
         }
 
         let timerDuration = 0;
@@ -2613,16 +2835,17 @@
             timerMinutesEl.value = formatNumber(minutes, 2);
             timerSecondsEl.value = formatNumber(seconds, 2);
             
-            if (!document.body.classList.contains('zen-mode')) {
-                if (remaining >= 3600000) {
-                    document.body.classList.add('time-hide-sec', 'time-hide-ms');
-                } else if (remaining >= 60000) {
-                    document.body.classList.add('time-hide-ms');
-                    document.body.classList.remove('time-hide-sec');
-                } else {
-                    document.body.classList.remove('time-hide-ms', 'time-hide-sec');
-                }
-            }
+            let inZen = document.body.classList.contains('zen-mode');
+            let inZenDeep = document.body.classList.contains('zen-mode-deep');
+            
+            let hideMs = userSettings.showMs === 'never' || (userSettings.showMs === 'auto' && (remaining >= 60000 || inZen));
+            let hideSec = userSettings.showSec === 'never' || (userSettings.showSec === 'auto' && (remaining >= 3600000 || inZenDeep));
+            
+            if (hideMs) document.body.classList.add('time-hide-ms'); 
+            else document.body.classList.remove('time-hide-ms');
+            
+            if (hideSec) document.body.classList.add('time-hide-sec'); 
+            else document.body.classList.remove('time-hide-sec');
         }
 
         function animationLoop() {
@@ -3359,6 +3582,9 @@
                 };
             }
         }
+        
+        // Kullanıcı ayarlarını en son yükle (değişkenler tanımlandıktan sonra)
+        loadUserSettings();
 
         window.addEventListener('beforeunload', () => {
             if (currentUser) {
