@@ -1446,8 +1446,7 @@
     <!-- FOOTER SIGNATURE -->
     <div class="footer">
         <div class="signature-wrapper" id="signature-trigger">
-            <div class="signature" id="signature-mehmet">Mehmet Korkmaz</div>
-            <div class="signature" id="signature-mustafa" style="display: none; position: absolute; top: 10px; left: 10px; color: #60a5fa;">Mustafa Ay</div>
+            <div class="signature" id="signature">Mehmet Korkmaz</div>
         </div>
     </div>
 
@@ -1633,7 +1632,6 @@
                         <button class="admin-tab" data-target="admin-tab-replies">💬 Mesaj Kutusu</button>
                         <button class="admin-tab" data-target="admin-tab-whitelist">🔐 Kullanıcı İzni</button>
                         <button class="admin-tab" data-target="admin-tab-settings">⚙️ Sistem Ayarları</button>
-                        <button class="admin-tab" data-target="admin-tab-records" style="color: #f87171; font-weight: bold;">🗂️ Kayıt Yönetimi</button>
                     </div>
 
                     <!-- MAIN CONTENT -->
@@ -1791,23 +1789,6 @@
                                     <option value="'Courier New', Courier, monospace">Klasik (Daktilo)</option>
                                     <option value="'Great Vibes', cursive">Zarif (El Yazısı)</option>
                                 </select>
-                            </div>
-                        </div>
-
-                        <!-- RECORDS TAB (ADMIN) -->
-                        <div id="admin-tab-records" class="admin-tab-content">
-                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:5px;">
-                                <h3 style="margin-top:0; margin-bottom:0; color:#f87171;">🗂️ Kayıt Yönetimi</h3>
-                                <div style="display:flex; gap:10px;">
-                                    <select id="admin-record-filter" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 5px; border-radius: 5px; font-size: 0.8rem; cursor: pointer; max-width: 130px; display: none; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                                        <option value="all">Tüm Kullanıcılar</option>
-                                    </select>
-                                    <button id="admin-load-records-btn" class="admin-btn" style="width:auto; padding:5px 10px; font-size:0.8rem; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);">Yenile</button>
-                                </div>
-                            </div>
-                            <p style="font-size:0.8rem; color:#94a3b8; margin-top:0; margin-bottom:15px;">Sistemdeki son 100 geçmiş süreyi listeleyin ve silin.</p>
-                            <div id="admin-all-records-list" class="records-list" style="max-height:350px; overflow-y:auto; padding-right:10px; margin-left:-20px; flex:unset; display:block;">
-                                <div style="color:rgba(255,255,255,0.4); text-align:center; margin-top:2rem;">Kayıtları görmek için yenile'ye basın.</div>
                             </div>
                         </div>
 
@@ -1982,26 +1963,6 @@
                 btnLogin.style.display = 'none';
                 userProfile.style.display = 'flex';
                 userName.textContent = user.displayName;
-                
-                // Signature Alternating Logic for Mustafa
-                if (user.email === 'mustafaqy901@gmail.com') {
-                    const sigMehmet = document.getElementById('signature-mehmet');
-                    const sigMustafa = document.getElementById('signature-mustafa');
-                    if (sigMehmet && sigMustafa) {
-                        sigMustafa.style.display = 'block';
-                        sigMustafa.style.opacity = '0';
-                        
-                        setInterval(() => {
-                            if (sigMehmet.style.opacity === '0') {
-                                sigMehmet.style.opacity = '0.8';
-                                sigMustafa.style.opacity = '0';
-                            } else {
-                                sigMehmet.style.opacity = '0';
-                                sigMustafa.style.opacity = '0.8';
-                            }
-                        }, 3000); // Toggle every 3 seconds
-                    }
-                }
                 userPic.src = user.photoURL;
                 btnSave.style.display = 'inline-block';
                 btnShowRecords.style.display = 'flex';
@@ -2300,7 +2261,6 @@
             try {
                 await addDoc(collection(db, "records"), {
                     uid: currentUser.uid,
-                    email: currentUser.email,
                     timeString: timeString,
                     rawTime: totalRawTime,
                     timestamp: serverTimestamp()
@@ -3208,116 +3168,6 @@
             });
         });
 
-        // Admin Records Logic
-        const adminLoadRecordsBtn = document.getElementById('admin-load-records-btn');
-        const adminAllRecordsList = document.getElementById('admin-all-records-list');
-        const adminRecordFilter = document.getElementById('admin-record-filter');
-
-        if (adminLoadRecordsBtn) {
-            adminLoadRecordsBtn.addEventListener('click', async () => {
-                adminAllRecordsList.innerHTML = '<div style="color:rgba(255,255,255,0.6); text-align:center; margin-top:2rem;">Yükleniyor...</div>';
-                try {
-                    const q = query(collection(db, "records"), orderBy("timestamp", "desc"), limit(100));
-                    const snapshot = await getDocs(q);
-                    adminAllRecordsList.innerHTML = '';
-                    
-                    if (snapshot.empty) {
-                        adminAllRecordsList.innerHTML = '<div style="color:rgba(255,255,255,0.4); text-align:center; margin-top:2rem;">Kayıt bulunamadı.</div>';
-                        if (adminRecordFilter) adminRecordFilter.style.display = 'none';
-                        return;
-                    }
-
-                    const uniqueUsers = new Set();
-
-                    snapshot.forEach(docSnap => {
-                        const data = docSnap.data();
-                        const docId = docSnap.id;
-                        const dateObj = data.timestamp ? data.timestamp.toDate() : new Date();
-                        const dateString = dateObj.toLocaleDateString('tr-TR') + ' ' + dateObj.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' });
-                        
-                        const legacyMap = {
-                            "UzbEkwmOIlYFSoOD0lZnWgGsRws2": "mkorkmazzz016@gmail.com",
-                            "n4xyUmxeUPV54HbAQC16qlXFTbx1": "mustafaqy901@gmail.com",
-                            "n4xyUmxeUPV54HbAQC16qIXFTbx1": "mustafaqy901@gmail.com"
-                        };
-                        const radarUser = typeof activeUsersData !== 'undefined' ? activeUsersData[data.uid] : null;
-                        const userIdentifier = data.email || (radarUser ? radarUser.email : null) || legacyMap[data.uid] || data.uid || "Bilinmiyor";
-                        uniqueUsers.add(userIdentifier);
-                        
-                        const div = document.createElement('div');
-                        div.className = 'record-item admin-record-entry';
-                        div.setAttribute('data-user', userIdentifier);
-                        div.style.flexDirection = 'row';
-                        div.style.flexWrap = 'wrap';
-                        div.style.gap = '10px';
-                        div.style.marginBottom = '15px';
-                        
-                        div.innerHTML = `
-                            <div style="flex:1; min-width: 150px; overflow: hidden; text-overflow: ellipsis;">
-                                <div style="font-size:0.75rem; color:#94a3b8; margin-bottom:2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${userIdentifier}">${userIdentifier}</div>
-                                <div class="record-time" style="font-size:1.1rem;">${data.timeString}</div>
-                            </div>
-                            <div style="text-align:right; display:flex; flex-direction:column; align-items:flex-end; gap:8px;">
-                                <div class="record-date" style="font-size:0.7rem;">${dateString}</div>
-                                <button class="admin-del-record-btn" data-id="${docId}" style="background:var(--accent-red); border:none; color:#fff; border-radius:4px; padding:3px 8px; cursor:pointer; font-size:0.7rem; font-weight:bold; transition: opacity 0.2s;">SİL</button>
-                            </div>
-                        `;
-                        adminAllRecordsList.appendChild(div);
-                    });
-
-                    // Update filter dropdown
-                    if (adminRecordFilter) {
-                        adminRecordFilter.innerHTML = '<option value="all">Tüm Kullanıcılar</option>';
-                        uniqueUsers.forEach(user => {
-                            const opt = document.createElement('option');
-                            opt.value = user;
-                            opt.textContent = user;
-                            adminRecordFilter.appendChild(opt);
-                        });
-                        adminRecordFilter.style.display = 'block';
-                        adminRecordFilter.value = 'all';
-                    }
-
-                    // Silme Butonları Event
-                    document.querySelectorAll('.admin-del-record-btn').forEach(btn => {
-                        btn.addEventListener('click', async (e) => {
-                            const id = e.target.getAttribute('data-id');
-                            if (confirm('Bu kaydı kalıcı olarak silmek istediğinize emin misiniz?')) {
-                                try {
-                                    e.target.style.opacity = '0.5';
-                                    e.target.textContent = 'Siliniyor...';
-                                    await deleteDoc(doc(db, "records", id));
-                                    e.target.closest('.record-item').remove();
-                                } catch (err) {
-                                    alert('Silinirken hata oluştu: ' + err.message);
-                                    e.target.style.opacity = '1';
-                                    e.target.textContent = 'SİL';
-                                }
-                            }
-                        });
-                    });
-
-                } catch (err) {
-                    adminAllRecordsList.innerHTML = '<div style="color:var(--accent-red); text-align:center; margin-top:2rem;">Hata: ' + err.message + '</div>';
-                }
-            });
-            
-            // Filter Listener
-            if (adminRecordFilter) {
-                adminRecordFilter.addEventListener('change', (e) => {
-                    const selectedUser = e.target.value;
-                    const items = adminAllRecordsList.querySelectorAll('.admin-record-entry');
-                    items.forEach(item => {
-                        if (selectedUser === 'all' || item.getAttribute('data-user') === selectedUser) {
-                            item.style.display = 'flex';
-                        } else {
-                            item.style.display = 'none';
-                        }
-                    });
-                });
-            }
-        }
-
         // Whitelist Add Logic
         const whitelistInput = document.getElementById('admin-whitelist-input');
         const whitelistAddBtn = document.getElementById('admin-whitelist-add-btn');
@@ -3746,4 +3596,3 @@
     </script>
 </body>
 </html>
-
